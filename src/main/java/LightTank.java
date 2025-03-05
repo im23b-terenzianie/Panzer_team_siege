@@ -33,8 +33,8 @@ public class LightTank implements BotInterface {
     }
 
     public void start() {
-        // GameWorld.startGame(this, LightTank.class); // This starts the game with a LightTank, and immediately starts the game when connected
-        GameWorld.connectToServer(this, dev.zwazel.internal.game.tank.implemented.LightTank.class); // This connects to the server with a LightTank, but does not immediately start the game
+        GameWorld.startGame(this,dev.zwazel.internal.game.tank.implemented.LightTank.class); // This starts the game with a LightTank, and immediately starts the game when connected
+        //GameWorld.connectToServer(this, dev.zwazel.internal.game.tank.implemented.LightTank.class); // This connects to the server with a LightTank, but does not immediately start the game
     }
 
     @Override

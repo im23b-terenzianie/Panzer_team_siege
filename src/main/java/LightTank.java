@@ -7,7 +7,6 @@ import dev.zwazel.internal.game.lobby.TeamConfig;
 import dev.zwazel.internal.game.state.ClientState;
 import dev.zwazel.internal.game.tank.Tank;
 import dev.zwazel.internal.game.tank.TankConfig;
-import dev.zwazel.internal.game.tank.implemented.LightTank;
 import dev.zwazel.internal.message.MessageContainer;
 import dev.zwazel.internal.message.MessageData;
 import dev.zwazel.internal.message.data.GameConfig;
@@ -20,7 +19,7 @@ import java.util.Optional;
 
 import static dev.zwazel.internal.message.MessageTarget.Type.CLIENT;
 
-public class MyBot implements BotInterface {
+public class LightTank implements BotInterface {
     private final PropertyHandler propertyHandler = PropertyHandler.getInstance();
     private final float minAttackDistance;
     private final float maxAttackDistance;
@@ -28,14 +27,14 @@ public class MyBot implements BotInterface {
     private List<ConnectedClientConfig> teamMembers;
     private List<ConnectedClientConfig> enemyTeamMembers;
 
-    public MyBot() {
+    public LightTank() {
         this.minAttackDistance = Float.parseFloat(propertyHandler.getProperty("bot.attack.minDistance"));
         this.maxAttackDistance = Float.parseFloat(propertyHandler.getProperty("bot.attack.maxDistance"));
     }
 
     public void start() {
         // GameWorld.startGame(this, LightTank.class); // This starts the game with a LightTank, and immediately starts the game when connected
-        GameWorld.connectToServer(this, LightTank.class); // This connects to the server with a LightTank, but does not immediately start the game
+        GameWorld.connectToServer(this, dev.zwazel.internal.game.tank.implemented.LightTank.class); // This connects to the server with a LightTank, but does not immediately start the game
     }
 
     @Override
@@ -63,7 +62,7 @@ public class MyBot implements BotInterface {
             return;
         }
 
-        LightTank tank = (LightTank) world.getTank();
+        dev.zwazel.internal.game.tank.implemented.LightTank tank = (dev.zwazel.internal.game.tank.implemented.LightTank) world.getTank();
         // HeavyTank tank = (HeavyTank) world.getTank();
         // SelfPropelledArtillery tank = (SelfPropelledArtillery) world.getTank();
         TankConfig myTankConfig = tank.getConfig(world);

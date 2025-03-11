@@ -1,3 +1,4 @@
+import dev.zwazel.internal.game.transform.Vec3;
 import dev.zwazel.internal.game.utils.Node;
 import java.util.HashSet;
 import java.util.PriorityQueue;
@@ -14,7 +15,7 @@ public class FindPath {
      * @param grid  the grid to get the path from
      * @return the path from the start to the end, or an array with the length of 0 if no path was found
      */
-    public Node[] findPath(Vector start, Vector end, GridGraph grid) {
+    public Node[] findPath(Vec3 start, Vec3 end, GridGraph grid) {
         Node node = grid.getNodes()[start.getX()][start.getY()];
         node.setCost(0);
         openList.add(node);
@@ -38,7 +39,7 @@ public class FindPath {
      * @param currentNode the node to expand
      * @param end         the end of the path, the target
      */
-    private void expandNode(Node currentNode, Vector end) {
+    private void expandNode(Node currentNode, Vec3 end) {
         for (Node successor : currentNode.getMyNeighbors()) {
             // if successor is in closed list or has an obstacle skip it. if it is the end, don't skip.
             if (closedList.contains(successor) || (successor.getMyGridCell().getCurrentObstacle() != null && !successor.getMyGridCell().getPosition().equals(end))) {
@@ -67,7 +68,7 @@ public class FindPath {
      * @param moveCount the number of steps to get
      * @return the next move steps
      */
-    public Node[] getNextMoveSteps(Node[] path, int moveCount, Vector end) {
+    public Node[] getNextMoveSteps(Node[] path, int moveCount, Vec3 end) {
         if (path.length > 0) {
             int length = Math.min(path.length, moveCount);
             Node[] nodes = new Node[length];
@@ -95,7 +96,7 @@ public class FindPath {
      * @param moveCount  the number of steps to get
      * @return the next move steps
      */
-    public Node[] getNextMoveSteps(Vector start, Vector vectorToGo, Grid grid, int moveCount, boolean canMoveDiagonally) {
+    public Node[] getNextMoveSteps(Vec3 start, Vec3 vectorToGo, Grid grid, int moveCount, boolean canMoveDiagonally) {
         Node[] path = new Node[0];
 
         if (moveCount <= 0) {
@@ -114,7 +115,7 @@ public class FindPath {
      * @param grid   the grid to check
      * @return true if the vector is occupied by an obstacle
      */
-    public boolean isOccupied(Vector vector, Grid grid) {
+    public boolean isOccupied(Vec3 vector, Grid grid) {
         return grid.getGridCells()[vector.getX()][vector.getY()].getCurrentObstacle() != null;
     }
 
@@ -126,7 +127,7 @@ public class FindPath {
      * @param grid  the grid to check
      * @return true if the vector is reachable from the start vector and not occupied by an obstacle
      */
-    public boolean isReachable(Vector start, Vector end, Grid grid) {
+    public boolean isReachable(Vec3 start, Vec3 end, Grid grid) {
         return (this.findPath(start, end, new GridGraph(grid)).length > 0);
     }
 

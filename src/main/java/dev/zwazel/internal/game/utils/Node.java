@@ -35,4 +35,8 @@ public class Node {
     public double getCost() {
         return f;
     }
+
+    public Node currentNode() {
+        return this;
+    }
 }

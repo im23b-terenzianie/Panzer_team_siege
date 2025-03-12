@@ -17,12 +17,12 @@ public class FindPath {
      */
     public Node[] findPath(Vec3 start, Vec3 end, GridGraph grid) {
         Node node = grid.getNodes()[start.getX()][start.getY()];
-        node.setCost(0);
+        node.setCost(0,  0);
         openList.add(node);
 
         while (!openList.isEmpty()) {
             Node currentNode = openList.poll();
-            if (currentNode.getMyGridCell().getPosition().equals(end)) {
+            if (currentNode.getMyGridCell().equals(end)) {
                 return getPathInCorrectOrder(currentNode, true);
             }
             closedList.add(currentNode);

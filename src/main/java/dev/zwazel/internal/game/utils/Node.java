@@ -20,23 +20,14 @@ public class Node {
         this.f = g + h;
     }
 
-    public void setParent(Node parent) {
-        this.parent = parent;
-    }
-
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
     public double getCost() {
         return f;
     }
 
-    public Node currentNode() {
+
+    public Node getMyGridCell() {
         return this;
     }
+
+
 }

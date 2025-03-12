@@ -38,7 +38,8 @@ public class LightTank implements BotInterface {
     }
 
     public void start() {
-        GameWorld.startGame(this, dev.zwazel.internal.game.tank.implemented.LightTank.class); // Startet das Spiel mit einem LightTank
+        //GameWorld.startGame(this, dev.zwazel.internal.game.tank.implemented.LightTank.class); // Startet das Spiel mit einem LightTank
+        GameWorld.connectToServer(this, dev.zwazel.internal.game.tank.implemented.LightTank.class);
     }
 
     @Override

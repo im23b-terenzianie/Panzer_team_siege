@@ -13,6 +13,7 @@ import dev.zwazel.internal.message.data.GameConfig;
 import dev.zwazel.internal.message.data.SimpleTextMessage;
 import dev.zwazel.internal.message.data.tank.GotHit;
 import dev.zwazel.internal.message.data.tank.Hit;
+import dev.zwazel.internal.game.utils.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,15 +27,18 @@ public class LightTank implements BotInterface {
 
     private List<ConnectedClientConfig> teamMembers;
     private List<ConnectedClientConfig> enemyTeamMembers;
+    private Grid grid;
+    private AStar aStar;
 
     public LightTank() {
         this.minAttackDistance = Float.parseFloat(propertyHandler.getProperty("bot.attack.minDistance"));
         this.maxAttackDistance = Float.parseFloat(propertyHandler.getProperty("bot.attack.maxDistance"));
+        this.grid = new Grid(10, 10); // Beispielgröße des Grids
+        this.aStar = new AStar();
     }
 
     public void start() {
-        GameWorld.startGame(this,dev.zwazel.internal.game.tank.implemented.LightTank.class); // This starts the game with a LightTank, and immediately starts the game when connected
-        //GameWorld.connectToServer(this, dev.zwazel.internal.game.tank.implemented.LightTank.class); // This connects to the server with a LightTank, but does not immediately start the game
+        GameWorld.startGame(this, dev.zwazel.internal.game.tank.implemented.LightTank.class); // Startet das Spiel mit einem LightTank
     }
 
     @Override
@@ -63,15 +67,12 @@ public class LightTank implements BotInterface {
         }
 
         dev.zwazel.internal.game.tank.implemented.LightTank tank = (dev.zwazel.internal.game.tank.implemented.LightTank) world.getTank();
-        // HeavyTank tank = (HeavyTank) world.getTank();
-        // SelfPropelledArtillery tank = (SelfPropelledArtillery) world.getTank();
         TankConfig myTankConfig = tank.getConfig(world);
         GameConfig config = world.getGameConfig();
 
         // Get the closest enemy tank
         Optional<ClientState> closestEnemy = enemyTeamMembers.stream()
                 .map(connectedClientConfig -> world.getClientState(connectedClientConfig.clientId()))
-                // Filter out null states, states without a position and dead states
                 .filter(clientState -> clientState != null && clientState.transformBody().getTranslation() != null &&
                         clientState.state() != ClientState.PlayerState.DEAD)
                 .min((o1, o2) -> {
@@ -113,12 +114,12 @@ public class LightTank implements BotInterface {
                 }
         );
 
-        /*// Example of moving and rotating the tank
+        // Example of moving and rotating the tank
         tank.rotateBody(world, -myTankConfig.bodyRotationSpeed());
         tank.rotateTurretYaw(world, myTankConfig.turretYawRotationSpeed());
         // for pitch rotation, positive is down
         // tank.rotateTurretPitch(world, -myTankConfig.turretPitchRotationSpeed());
-        tank.move(world, Tank.MoveDirection.FORWARD);*/
+        tank.move(world, Tank.MoveDirection.FORWARD);
 
         // Get messages of a specific type only
         List<MessageContainer> hitMessages = world.getIncomingMessages(Hit.class);

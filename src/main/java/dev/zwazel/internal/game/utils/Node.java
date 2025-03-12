@@ -24,10 +24,7 @@ public class Node {
         return f;
     }
 
-
-    public Node getMyGridCell() {
-        return this;
+    public boolean isSameAs(Node node) {
+        return this.x == node.x && this.y == node.y;
     }
-
-
 }

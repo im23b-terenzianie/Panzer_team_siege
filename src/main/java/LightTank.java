@@ -28,13 +28,12 @@ public class LightTank implements BotInterface {
     private List<ConnectedClientConfig> teamMembers;
     private List<ConnectedClientConfig> enemyTeamMembers;
     private Grid grid;
-    private AStar aStar;
+
 
     public LightTank() {
         this.minAttackDistance = Float.parseFloat(propertyHandler.getProperty("bot.attack.minDistance"));
         this.maxAttackDistance = Float.parseFloat(propertyHandler.getProperty("bot.attack.maxDistance"));
         this.grid = new Grid(10, 10); // Beispielgröße des Grids
-        this.aStar = new AStar();
     }
 
     public void start() {

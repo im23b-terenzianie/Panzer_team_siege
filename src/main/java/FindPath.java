@@ -58,8 +58,8 @@ public class FindPath {
             if (!open.contains(neighbour)) { // If the neighbor is not in the open list
                 open.add(neighbour); // Add the neighbor to the open list
             } else {
-                open.remove(neighbour); // Remove and re-add to update the priority
-                open.add(neighbour);
+                open.remove(neighbour);
+
             }
         }
     }

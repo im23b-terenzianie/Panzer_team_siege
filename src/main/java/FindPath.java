@@ -32,13 +32,13 @@ public class FindPath {
             if (current.equals(target)) { // If the target node is reached
                 Node node = current;
                 while (node != null) { // Reconstruct the path
-                    path.addFirst(node);
+                    path.add(node);
                     node = node.getParent();
                 }
-                closed.add(current); // Add the current node to the closed list
                 return path; // Return the path
             }
             expand(current); // Expand the current node
+            closed.add(current); // Add current Node to closed list
         }
         return path; // Return the path (empty if no path found)
     }

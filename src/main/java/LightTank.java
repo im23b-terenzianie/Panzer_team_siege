@@ -9,6 +9,7 @@ import dev.zwazel.internal.game.state.ClientState;
 import dev.zwazel.internal.game.state.FlagGameState;
 import dev.zwazel.internal.game.tank.Tank;
 import dev.zwazel.internal.game.tank.TankConfig;
+import dev.zwazel.internal.game.transform.Vec3;
 import dev.zwazel.internal.message.MessageContainer;
 import dev.zwazel.internal.message.MessageData;
 import dev.zwazel.internal.message.data.GameConfig;
@@ -75,14 +76,20 @@ public class LightTank implements BotInterface {
     @Override
     public void processTick(PublicGameWorld world) {
 
+        boolean allowDiagonal = true;
+        GameConfig config1 = world.getGameConfig();
+        float[][] heightMap = config1.mapDefinition().tiles();
+
+        Graph graph = new Graph(heightMap, allowDiagonal);
+
 
 
         ClientState myClientState = world.getMyState();
 
-        int startX = (int) myClientState.transformBody().getTranslation().getX();
-        int startY = (int) myClientState.transformBody().getTranslation().getY();
-        int height = (int) myClientState.transformBody().getTranslation().getZ();
-        Node root = new Node(startY,startX , height);
+        Vec3 myClosestTile = world.getGameConfig().mapDefinition().getClosestTileFromWorld(myClientState.transformBody().getTranslation());
+
+        Node root = graph.getNode(myClosestTile.getX(), myClosestTile.getZ());
+
 
         GameState gameState = world.getGameState();
 
@@ -92,20 +99,12 @@ public class LightTank implements BotInterface {
         if (!flagStates.isEmpty()) {
             Map.Entry<Long, FlagGameState> firstEntry = flagStates.entrySet().iterator().next(); // Erstes Element holen
             FlagGameState flagState = firstEntry.getValue();
+            Vec3 enemyFlagClosestTile = config1.mapDefinition().getClosestTileFromWorld(flagState.transform().getTranslation());
 
-            // Koordinaten abrufen
-            int flagX = (int) flagState.transform().getTranslation().getX();
-            int flagY = (int) flagState.transform().getTranslation().getY();
-            int flagZ = (int) flagState.transform().getTranslation().getZ();
+            flag = graph.getNode((int) enemyFlagClosestTile.getX(), (int) enemyFlagClosestTile.getZ());
 
-            flag = new Node(flagY, flagX, flagZ);
         }
-        boolean allowDiagonal = true;
-        GameConfig config1 = world.getGameConfig();
-        float[][] heightMap = config1.mapDefinition().tiles();
 
-
-        Graph graph = new Graph(heightMap, allowDiagonal);
 
 
         if (myClientState.state() == ClientState.PlayerState.DEAD) {

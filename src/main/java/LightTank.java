@@ -118,6 +118,7 @@ public class LightTank implements BotInterface {
 
         // TODO: Implement pathfinding
 
+
         if (visualiser != null) {
             visualiser.setPath(path);
         }

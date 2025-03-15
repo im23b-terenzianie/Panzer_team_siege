@@ -49,8 +49,17 @@ public class FindPath {
             if (closed.contains(neighbour)) { // Skip if the neighbor is in the closed list
                 continue;
             }
-            double neigbourCost = Math.sqrt(Math.pow(current.getX() - neighbour.getX(), 2 ) + Math.pow(current.getY() - neighbour.getY(), 2));
-            double tentativeG = current.getCost() + neigbourCost ; // Calculate the tentative cost
+            double maxHeightDifference = 0.25;
+            double heightDifference = Math.abs(neighbour.getHeight() - current.getHeight());
+            if (heightDifference > maxHeightDifference) {
+                continue;
+            }
+            double neighbourCost = Math.sqrt(Math.pow(current.getX() - neighbour.getX(), 2)
+                    + Math.pow(current.getY() - neighbour.getY(), 2));
+
+
+
+            double tentativeG = current.getCost() + neighbourCost ; // Calculate the tentative cost
 
             if (tentativeG < neighbour.getCost()) { // If the new cost is lower
                 neighbour.setCost(tentativeG); // Update the cost
@@ -60,7 +69,7 @@ public class FindPath {
                 open.add(neighbour); // Add the neighbor to the open list
             } else {
                 open.remove(neighbour);
-
+                open.add(neighbour);
             }
         }
     }

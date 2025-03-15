@@ -49,7 +49,8 @@ public class FindPath {
             if (closed.contains(neighbour)) { // Skip if the neighbor is in the closed list
                 continue;
             }
-            double tentativeG = current.getCost() + neighbour.getCost(); // Calculate the tentative cost
+            double neigbourCost = Math.sqrt(Math.pow(current.getX() - neighbour.getX(), 2 ) + Math.pow(current.getY() - neighbour.getY(), 2));
+            double tentativeG = current.getCost() + neigbourCost ; // Calculate the tentative cost
 
             if (tentativeG < neighbour.getCost()) { // If the new cost is lower
                 neighbour.setCost(tentativeG); // Update the cost

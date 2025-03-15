@@ -3,20 +3,22 @@ import dev.zwazel.PropertyHandler;
 import dev.zwazel.bot.BotInterface;
 import dev.zwazel.internal.PublicGameWorld;
 import dev.zwazel.internal.connection.client.ConnectedClientConfig;
+import dev.zwazel.internal.debug.MapVisualiser;
 import dev.zwazel.internal.game.lobby.TeamConfig;
 import dev.zwazel.internal.game.state.ClientState;
+import dev.zwazel.internal.game.state.FlagGameState;
 import dev.zwazel.internal.game.tank.Tank;
 import dev.zwazel.internal.game.tank.TankConfig;
 import dev.zwazel.internal.message.MessageContainer;
 import dev.zwazel.internal.message.MessageData;
 import dev.zwazel.internal.message.data.GameConfig;
+import dev.zwazel.internal.message.data.GameState;
 import dev.zwazel.internal.message.data.SimpleTextMessage;
 import dev.zwazel.internal.message.data.tank.GotHit;
 import dev.zwazel.internal.message.data.tank.Hit;
 import dev.zwazel.internal.game.utils.*;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static dev.zwazel.internal.message.MessageTarget.Type.CLIENT;
 
@@ -28,15 +30,15 @@ public class LightTank implements BotInterface {
     private List<ConnectedClientConfig> teamMembers;
     private List<ConnectedClientConfig> enemyTeamMembers;
 
-
+    private MapVisualiser visualiser;
 
     public LightTank() {
         this.minAttackDistance = Float.parseFloat(propertyHandler.getProperty("bot.attack.minDistance"));
         this.maxAttackDistance = Float.parseFloat(propertyHandler.getProperty("bot.attack.maxDistance"));
     }
 
+
     public void start() {
-        //GameWorld.startGame(this, dev.zwazel.internal.game.tank.implemented.LightTank.class); // Startet das Spiel mit einem LightTank
         GameWorld.connectToServer(this, dev.zwazel.internal.game.tank.implemented.LightTank.class);
     }
 
@@ -50,26 +52,70 @@ public class LightTank implements BotInterface {
                 .findFirst()
                 .orElseThrow();
 
-        // Get all team members, excluding myself
         teamMembers = config.getTeamMembers(myTeamConfig.teamName(), config.clientId());
-        // Get all enemy team members
         enemyTeamMembers = config.getTeamMembers(enemyTeamConfig.teamName());
     }
+
+
 
     @Override
     public void processTick(PublicGameWorld world) {
         ClientState myClientState = world.getMyState();
+
+        int startX = (int) myClientState.transformBody().getTranslation().getX();
+        int startY = (int) myClientState.transformBody().getTranslation().getY();
+        int height = (int) myClientState.transformBody().getTranslation().getZ();
+        Node root = new Node(startY,startX , height);
+
+        GameState gameState = world.getGameState();
+
+        HashMap<Long, FlagGameState> flagStates = gameState.flagStates();
+
+        Node flag = null;
+        if (!flagStates.isEmpty()) {
+            Map.Entry<Long, FlagGameState> firstEntry = flagStates.entrySet().iterator().next(); // Erstes Element holen
+            FlagGameState flagState = firstEntry.getValue();
+
+            // Koordinaten abrufen
+            int flagX = (int) flagState.transform().getTranslation().getX();
+            int flagY = (int) flagState.transform().getTranslation().getY();
+            int flagZ = (int) flagState.transform().getTranslation().getZ();
+
+            flag = new Node(flagY, flagX, flagZ);
+        }
+        boolean allowDiagonal = true;
+        GameConfig config1 = world.getGameConfig();
+        float[][] heightMap = config1.mapDefinition().tiles();
+
+
+        Graph graph = new Graph(heightMap, allowDiagonal);
+
 
         if (myClientState.state() == ClientState.PlayerState.DEAD) {
             System.out.println("I'm dead!");
             return;
         }
 
+        if (world.isDebug()) {
+            visualiser.setDrawingMode(MapVisualiser.DrawingMode.valueOf(propertyHandler.getProperty("debug.visualiser.mode").toUpperCase()));
+            visualiser.showMap();
+            world.registerVisualiser(visualiser);
+        }
+
+        LinkedList<Node> path = new LinkedList<>();
+        FindPath findPath = new FindPath(root,flag, graph);
+        path = findPath.findPath();
+
+        // TODO: Implement pathfinding
+
+        if (visualiser != null) {
+            visualiser.setPath(path);
+        }
+
         dev.zwazel.internal.game.tank.implemented.LightTank tank = (dev.zwazel.internal.game.tank.implemented.LightTank) world.getTank();
         TankConfig myTankConfig = tank.getConfig(world);
         GameConfig config = world.getGameConfig();
 
-        // Get the closest enemy tank
         Optional<ClientState> closestEnemy = enemyTeamMembers.stream()
                 .map(connectedClientConfig -> world.getClientState(connectedClientConfig.clientId()))
                 .filter(clientState -> clientState != null && clientState.transformBody().getTranslation() != null &&
@@ -80,26 +126,19 @@ public class LightTank implements BotInterface {
                     return Double.compare(distance1, distance2);
                 });
 
-        // Move towards the closest enemy and shoot when close enough, or move in a circle if no enemies are found
         closestEnemy.ifPresentOrElse(
                 enemy -> {
-                    // If enemy is within attack range, shoot; otherwise, move accordingly
                     double distanceToEnemy = myClientState.transformBody().getTranslation().distance(enemy.transformBody().getTranslation());
 
                     if (distanceToEnemy < this.minAttackDistance) {
-                        // Move away from enemy if too close
                         tank.moveTowards(world, Tank.MoveDirection.BACKWARD, enemy.transformBody().getTranslation(), true);
                     } else if (distanceToEnemy > this.maxAttackDistance) {
-                        // Move towards enemy if too far
                         tank.moveTowards(world, Tank.MoveDirection.FORWARD, enemy.transformBody().getTranslation(), true);
                     }
                     tank.rotateTurretTowards(world, enemy.transformBody().getTranslation());
 
                     if (distanceToEnemy <= this.maxAttackDistance) {
-                        // You can check if you can shoot before shooting
                         if (tank.canShoot(world)) {
-                            // Or also just shoot, it will return false if you can't shoot.
-                            // And by checking the world, if debug is enabled, you can print out a message.
                             if (tank.shoot(world) && world.isDebug()) {
                                 System.out.println("Shot at enemy!");
                             }
@@ -107,27 +146,21 @@ public class LightTank implements BotInterface {
                     }
                 },
                 () -> {
-                    // No enemies found, move in a circle (negative is clockwise for yaw rotation)
                     tank.rotateBody(world, -myTankConfig.bodyRotationSpeed());
                     tank.move(world, Tank.MoveDirection.FORWARD);
                 }
         );
 
-        // Example of moving and rotating the tank
         tank.rotateBody(world, -myTankConfig.bodyRotationSpeed());
         tank.rotateTurretYaw(world, myTankConfig.turretYawRotationSpeed());
-        // for pitch rotation, positive is down
-        // tank.rotateTurretPitch(world, -myTankConfig.turretPitchRotationSpeed());
         tank.move(world, Tank.MoveDirection.FORWARD);
 
-        // Get messages of a specific type only
         List<MessageContainer> hitMessages = world.getIncomingMessages(Hit.class);
         for (MessageContainer message : hitMessages) {
             Hit gotHitMessageData = (Hit) message.getMessage();
             handleHittingTank(world, gotHitMessageData);
         }
 
-        // Get all messages
         List<MessageContainer> messages = world.getIncomingMessages();
         for (MessageContainer message : messages) {
             MessageData data = message.getMessage();
@@ -137,13 +170,11 @@ public class LightTank implements BotInterface {
                         System.out.println("Received text message:\n\t" + textMessage.message());
                 case GotHit gotHitMessageData -> handleGettingHit(world, gotHitMessageData);
                 case Hit _ -> {
-                    // We already handled this message type above
                 }
                 default -> System.err.println("Received unknown message type: " + data.getClass().getSimpleName());
             }
         }
 
-        // Sending a nice message to all team members (individually, you could also send a single message to full team)
         teamMembers
                 .forEach(target -> world.send(new MessageContainer(
                         CLIENT.get(target.clientId()),
@@ -152,7 +183,6 @@ public class LightTank implements BotInterface {
                         )
                 )));
 
-        // Sending a less nice message to all enemy team members
         enemyTeamMembers
                 .forEach(target -> world.send(new MessageContainer(
                         CLIENT.get(target.clientId()),
@@ -171,7 +201,6 @@ public class LightTank implements BotInterface {
         float dealtDamage = hitMessageData.damageDealt();
         ClientState targetState = targetConfig.getClientState(world);
         System.out.println("Hit " + targetConfig.clientName() + " on " + hitMessageData.hitSide() + " side!");
-        // print out how the damage was calculated
         System.out.println("Dealt damage: " + dealtDamage + " = " + myExpectedDamage + " * (1 - " + armorOnHitSide + ")");
         System.out.println(targetConfig.clientName() + " health: " + targetState.currentHealth());
     }

@@ -72,11 +72,11 @@ public class LightTank implements BotInterface {
     }
 
 
-
+    LinkedList<Node> path = new LinkedList<>();
     @Override
     public void processTick(PublicGameWorld world) {
 
-        boolean allowDiagonal = true;
+        boolean allowDiagonal = false;
         GameConfig config1 = world.getGameConfig();
         float[][] heightMap = config1.mapDefinition().tiles();
 
@@ -114,7 +114,7 @@ public class LightTank implements BotInterface {
 
 
 
-        LinkedList<Node> path = new FindPath(root, flag, graph).findPath();
+
 
         // TODO: Implement pathfinding
 
@@ -134,7 +134,7 @@ public class LightTank implements BotInterface {
                 );
 
         double distanceToNext = myClientState.transformBody().getTranslation().distance(worldPosOfTile);
-        double closeEnough = 0.5;
+        double closeEnough = 0.3;
         if (distanceToNext < closeEnough) {
             path.pollFirst();
             nextTargetPos = path.peekFirst();
@@ -150,6 +150,7 @@ public class LightTank implements BotInterface {
 
         if (visualiser != null) {
             visualiser.setPath(path);
+            visualiser.setGraph(graph);
         }
 
 

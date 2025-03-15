@@ -32,7 +32,7 @@ public class FindPath {
             if (current.equals(target)) { // If the target node is reached
                 Node node = current;
                 while (node != null) { // Reconstruct the path
-                    path.add(node);
+                    path.addFirst(node);
                     node = node.getParent();
                 }
                 return path; // Return the path

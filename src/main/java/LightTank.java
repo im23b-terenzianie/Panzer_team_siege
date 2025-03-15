@@ -38,6 +38,8 @@ public class LightTank implements BotInterface {
     }
 
 
+
+
     public void start() {
         GameWorld.connectToServer(this, dev.zwazel.internal.game.tank.implemented.LightTank.class);
     }
@@ -52,14 +54,29 @@ public class LightTank implements BotInterface {
                 .findFirst()
                 .orElseThrow();
 
+        // Get all team members, excluding myself
         teamMembers = config.getTeamMembers(myTeamConfig.teamName(), config.clientId());
+        // Get all enemy team members
         enemyTeamMembers = config.getTeamMembers(enemyTeamConfig.teamName());
+
+        // If in debug, add visualiser
+        if (world.isDebug()) {
+            // Add visualiser. By pressing space, you can switch between drawing modes.
+            visualiser = new MapVisualiser(world);
+            visualiser.setDrawingMode(MapVisualiser.DrawingMode.valueOf(propertyHandler.getProperty("debug.visualiser.mode").toUpperCase()));
+            visualiser.showMap();
+            world.registerVisualiser(visualiser);
+        }
+
     }
 
 
 
     @Override
     public void processTick(PublicGameWorld world) {
+
+
+
         ClientState myClientState = world.getMyState();
 
         int startX = (int) myClientState.transformBody().getTranslation().getX();
@@ -96,21 +113,18 @@ public class LightTank implements BotInterface {
             return;
         }
 
-        if (world.isDebug()) {
-            visualiser.setDrawingMode(MapVisualiser.DrawingMode.valueOf(propertyHandler.getProperty("debug.visualiser.mode").toUpperCase()));
-            visualiser.showMap();
-            world.registerVisualiser(visualiser);
-        }
 
-        LinkedList<Node> path = new LinkedList<>();
-        FindPath findPath = new FindPath(root,flag, graph);
-        path = findPath.findPath();
+
+        LinkedList<Node> path = new FindPath(root, flag, graph).findPath();
 
         // TODO: Implement pathfinding
 
         if (visualiser != null) {
             visualiser.setPath(path);
         }
+
+
+
 
         dev.zwazel.internal.game.tank.implemented.LightTank tank = (dev.zwazel.internal.game.tank.implemented.LightTank) world.getTank();
         TankConfig myTankConfig = tank.getConfig(world);

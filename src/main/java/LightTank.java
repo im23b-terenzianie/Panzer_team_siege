@@ -126,9 +126,14 @@ public class LightTank implements BotInterface {
 
         Node nextTargetPos = path.peekFirst();
 
-        Vec3 nextTargetVec = new Vec3(nextTargetPos.getX(), nextTargetPos.getY(), nextTargetPos.getHeight());
+        Vec3 worldPosOfTile = world.getGameConfig()
+                .mapDefinition()
+                .getWorldTileCenter(
+                        nextTargetPos.getX(),
+                        nextTargetPos.getY()
+                );
 
-        double distanceToNext = myClientState.transformBody().getTranslation().distance(nextTargetVec);
+        double distanceToNext = myClientState.transformBody().getTranslation().distance(worldPosOfTile);
         double closeEnough = 0.5;
         if (distanceToNext < closeEnough) {
             path.pollFirst();
@@ -138,10 +143,10 @@ public class LightTank implements BotInterface {
                 System.out.println("Finished Path");
                 return;
             }
-            nextTargetVec = new Vec3(nextTargetPos.getX(), myClientState.transformBody().getTranslation().getY(), nextTargetPos.getHeight());
+
         }
 
-        world.getTank().moveTowards(world, nextTargetVec, true);
+        world.getTank().moveTowards(world, worldPosOfTile, true);
 
         if (visualiser != null) {
             visualiser.setPath(path);

@@ -18,7 +18,7 @@
         <dependency>
             <groupId>dev.zwazel</groupId>
             <artifactId>tank-coding-battle-java-interface</artifactId>
-            <version>v0.7.0</version>
+            <version>v0.7.3</version>
         </dependency>
     </dependencies>
 </project>

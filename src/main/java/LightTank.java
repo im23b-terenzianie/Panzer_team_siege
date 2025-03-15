@@ -126,7 +126,7 @@ public class LightTank implements BotInterface {
 
         Node nextTargetPos = path.peekFirst();
 
-        Vec3 nextTargetVec = new Vec3(nextTargetPos.getX(), myClientState.transformBody().getTranslation().getY(), nextTargetPos.getHeight());
+        Vec3 nextTargetVec = new Vec3(nextTargetPos.getX(), nextTargetPos.getY(), nextTargetPos.getHeight());
 
         double distanceToNext = myClientState.transformBody().getTranslation().distance(nextTargetVec);
         double closeEnough = 0.5;

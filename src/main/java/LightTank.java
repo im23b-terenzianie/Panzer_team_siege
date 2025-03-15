@@ -118,13 +118,37 @@ public class LightTank implements BotInterface {
 
         // TODO: Implement pathfinding
 
+        if (path.isEmpty()){
+            path = new FindPath(root, flag, graph).findPath();
+
+        }
+
+
+        Node nextTargetPos = path.peekFirst();
+
+        Vec3 nextTargetVec = new Vec3(nextTargetPos.getX(), myClientState.transformBody().getTranslation().getY(), nextTargetPos.getHeight());
+
+        double distanceToNext = myClientState.transformBody().getTranslation().distance(nextTargetVec);
+        double closeEnough = 0.5;
+        if (distanceToNext < closeEnough) {
+            path.pollFirst();
+            nextTargetPos = path.peekFirst();
+
+            if (nextTargetPos == null){
+                System.out.println("Finished Path");
+                return;
+            }
+            nextTargetVec = new Vec3(nextTargetPos.getX(), myClientState.transformBody().getTranslation().getY(), nextTargetPos.getHeight());
+        }
+
+        world.getTank().moveTowards(world, nextTargetVec, true);
 
         if (visualiser != null) {
             visualiser.setPath(path);
         }
 
 
-
+/*
 
         dev.zwazel.internal.game.tank.implemented.LightTank tank = (dev.zwazel.internal.game.tank.implemented.LightTank) world.getTank();
         TankConfig myTankConfig = tank.getConfig(world);
@@ -229,4 +253,6 @@ public class LightTank implements BotInterface {
             System.out.println("I died! killed by " + shooterConfig.clientName());
         }
     }
-}
+
+ */
+} }

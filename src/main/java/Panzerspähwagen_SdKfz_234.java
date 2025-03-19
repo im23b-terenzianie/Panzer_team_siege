@@ -139,30 +139,35 @@ public class Panzerspähwagen_SdKfz_234 implements BotInterface {
 
 
         if (path.isEmpty()) {
-            if (enemyFlagState.state() instanceof Dropped) {
-                path = new FindPath(root, flag, graph).findPath();
-            } else {
-                HashMap<Long, FlagBaseState> flagBaseStates = gameState.flagBaseStates();
-                FlagBaseState flagBaseState = null;
-                if (!flagBaseStates.isEmpty()) {
-                    flagBaseState = flagBaseStates
-                            .values()
-                            .stream()
-                            .filter(state ->
-                                    !state.team().equals(config1.getMyConfig().clientTeam()))
-                            .findFirst()
-                            .orElse(null);
+            if (enemyFlagState.state() instanceof Carried) {
+                Carried carriedState = (Carried) enemyFlagState.state();
+                if (carriedState.entityId() == config1.getMyConfig().clientId()) {
+                    HashMap<Long, FlagBaseState> flagBaseStates = gameState.flagBaseStates();
+                    FlagBaseState flagBaseState = null;
+                    if (!flagBaseStates.isEmpty()) {
+                        flagBaseState = flagBaseStates
+                                .values()
+                                .stream()
+                                .filter(state ->
+                                        state.team().equals(config1.getMyConfig().clientTeam()))
+                                .findFirst()
+                                .orElse(null);
 
-                    Vec3 teamflagbase = config1.mapDefinition().getClosestTileFromWorld(flagBaseState.transform().getTranslation());
+                        Vec3 teamflagbase = config1.mapDefinition().getClosestTileFromWorld(flagBaseState.transform().getTranslation());
 
-                    Node base = graph.getNode((int) teamflagbase.getX(), (int) teamflagbase.getZ());
+                        Node base = graph.getNode((int) teamflagbase.getX(), (int) teamflagbase.getZ());
 
-                    path = new FindPath(root, base, graph).findPath();
+                        path = new FindPath(root, base, graph).findPath();
+                    }
+
                 }
+            } else {
 
+                path = new FindPath(root, flag, graph).findPath();
             }
         }
 
+        if (!path.isEmpty()) {
             Node nextTargetPos = path.peekFirst();
 
             Vec3 worldPosOfTile = world.getGameConfig()
@@ -193,6 +198,7 @@ public class Panzerspähwagen_SdKfz_234 implements BotInterface {
                 visualiser.setGraph(graph);
             }
 
+        }
     }
 }
 

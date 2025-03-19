@@ -113,16 +113,10 @@ public class LightTank implements BotInterface {
         }
 
 
-
-
-
-        // TODO: Implement pathfinding
-
         if (path.isEmpty()){
             path = new FindPath(root, flag, graph).findPath();
 
         }
-
 
         Node nextTargetPos = path.peekFirst();
 

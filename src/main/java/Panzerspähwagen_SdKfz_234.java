@@ -8,7 +8,11 @@ import dev.zwazel.internal.connection.client.ConnectedClientConfig;
 import dev.zwazel.internal.debug.MapVisualiser;
 import dev.zwazel.internal.game.lobby.TeamConfig;
 import dev.zwazel.internal.game.state.ClientState;
+import dev.zwazel.internal.game.state.FlagBaseState;
 import dev.zwazel.internal.game.state.FlagGameState;
+import dev.zwazel.internal.game.state.flag.Carried;
+import dev.zwazel.internal.game.state.flag.Dropped;
+import dev.zwazel.internal.game.state.flag.FlagState;
 import dev.zwazel.internal.game.tank.implemented.LightTank;
 import dev.zwazel.internal.game.transform.Vec3;
 import dev.zwazel.internal.message.data.GameConfig;
@@ -33,10 +37,8 @@ public class Panzerspähwagen_SdKfz_234 implements BotInterface {
     }
 
 
-
-
     public void start() {
-        GameWorld.connectToServer(this);
+        GameWorld.startGame(this);
     }
 
     @Override
@@ -89,6 +91,7 @@ public class Panzerspähwagen_SdKfz_234 implements BotInterface {
 
 
     LinkedList<Node> path = new LinkedList<>();
+
     @Override
     public void processTick(PublicGameWorld world) {
 
@@ -97,7 +100,6 @@ public class Panzerspähwagen_SdKfz_234 implements BotInterface {
         float[][] heightMap = config1.mapDefinition().tiles();
 
         Graph graph = new Graph(config1.mapDefinition(), allowDiagonal);
-
 
 
         ClientState myClientState = world.getMyState();
@@ -112,15 +114,22 @@ public class Panzerspähwagen_SdKfz_234 implements BotInterface {
         HashMap<Long, FlagGameState> flagStates = gameState.flagStates();
 
         Node flag = null;
+        FlagGameState enemyFlagState = null;
         if (!flagStates.isEmpty()) {
-            Map.Entry<Long, FlagGameState> firstEntry = flagStates.entrySet().iterator().next(); // Erstes Element holen
-            FlagGameState flagState = firstEntry.getValue();
-            Vec3 enemyFlagClosestTile = config1.mapDefinition().getClosestTileFromWorld(flagState.transform().getTranslation());
+            enemyFlagState = flagStates
+                    .values()
+                    .stream()
+                    .filter(state ->
+                            !state.team().equals(config1.getMyConfig().clientTeam()))
+                    .findFirst()
+                    .orElse(null);
+
+
+            Vec3 enemyFlagClosestTile = config1.mapDefinition().getClosestTileFromWorld(enemyFlagState.transform().getTranslation());
 
             flag = graph.getNode((int) enemyFlagClosestTile.getX(), (int) enemyFlagClosestTile.getZ());
 
         }
-
 
 
         if (myClientState.state() == ClientState.PlayerState.DEAD) {
@@ -129,42 +138,63 @@ public class Panzerspähwagen_SdKfz_234 implements BotInterface {
         }
 
 
-        if (path.isEmpty()){
+        if (path.isEmpty()) {
+            if (enemyFlagState.state() instanceof Dropped) {
+                path = new FindPath(root, flag, graph).findPath();
+            } else {
+                HashMap<Long, FlagBaseState> flagBaseStates = gameState.flagBaseStates();
+                FlagBaseState flagBaseState = null;
+                if (!flagBaseStates.isEmpty()) {
+                    flagBaseState = flagBaseStates
+                            .values()
+                            .stream()
+                            .filter(state ->
+                                    !state.team().equals(config1.getMyConfig().clientTeam()))
+                            .findFirst()
+                            .orElse(null);
 
-            if (flag != null) {}
-            path = new FindPath(root, flag, graph).findPath();
+                    Vec3 teamflagbase = config1.mapDefinition().getClosestTileFromWorld(flagBaseState.transform().getTranslation());
 
+                    Node base = graph.getNode((int) teamflagbase.getX(), (int) teamflagbase.getZ());
+
+                    path = new FindPath(root, base, graph).findPath();
+                }
+
+            }
         }
 
-        Node nextTargetPos = path.peekFirst();
+            Node nextTargetPos = path.peekFirst();
 
-        Vec3 worldPosOfTile = world.getGameConfig()
-                .mapDefinition()
-                .getWorldTileCenter(
-                        nextTargetPos.getX(),
-                        nextTargetPos.getY()
-                );
+            Vec3 worldPosOfTile = world.getGameConfig()
+                    .mapDefinition()
+                    .getWorldTileCenter(
+                            nextTargetPos.getX(),
+                            nextTargetPos.getY()
+                    );
 
-        double distanceToNext = myClientState.transformBody().getTranslation().distance(worldPosOfTile);
-        double closeEnough = 0.3;
-        if (distanceToNext < closeEnough) {
-            path.pollFirst();
-            nextTargetPos = path.peekFirst();
+            double distanceToNext = myClientState.transformBody().getTranslation().distance(worldPosOfTile);
+            double closeEnough = 0.3;
+            if (distanceToNext < closeEnough) {
+                path.pollFirst();
+                nextTargetPos = path.peekFirst();
 
-            if (nextTargetPos == null){
-                System.out.println("Finished Path");
-                return;
+                if (nextTargetPos == null) {
+                    System.out.println("Finished Path");
+                    return;
+                }
+
             }
 
-        }
+            System.out.println("Next Target Pos: " + nextTargetPos);
+            world.getTank().moveTowards(world, worldPosOfTile, false);
 
-        world.getTank().moveTowards(world, worldPosOfTile, false);
+            if (visualiser != null) {
+                visualiser.setPath(path);
+                visualiser.setGraph(graph);
+            }
 
-        if (visualiser != null) {
-            visualiser.setPath(path);
-            visualiser.setGraph(graph);
-        }
-
+    }
+}
 
 /*
 
@@ -273,4 +303,3 @@ public class Panzerspähwagen_SdKfz_234 implements BotInterface {
     }
 
  */
-} }

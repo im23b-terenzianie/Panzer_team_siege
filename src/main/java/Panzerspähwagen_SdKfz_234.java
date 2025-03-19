@@ -7,7 +7,6 @@ import dev.zwazel.internal.config.LocalBotConfig;
 import dev.zwazel.internal.connection.client.ConnectedClientConfig;
 import dev.zwazel.internal.debug.MapVisualiser;
 import dev.zwazel.internal.game.lobby.TeamConfig;
-import dev.zwazel.internal.game.map.MapDefinition;
 import dev.zwazel.internal.game.state.ClientState;
 import dev.zwazel.internal.game.state.FlagGameState;
 import dev.zwazel.internal.game.tank.implemented.LightTank;
@@ -18,7 +17,7 @@ import dev.zwazel.internal.game.utils.*;
 
 import java.util.*;
 
-public class KomischeScheisswofastisch implements BotInterface {
+public class Panzerspähwagen_SdKfz_234 implements BotInterface {
     private final PropertyHandler propertyHandler = PropertyHandler.getInstance();
     private final float minAttackDistance;
     private final float maxAttackDistance;
@@ -28,7 +27,7 @@ public class KomischeScheisswofastisch implements BotInterface {
 
     private MapVisualiser visualiser;
 
-    public KomischeScheisswofastisch() {
+    public Panzerspähwagen_SdKfz_234() {
         this.minAttackDistance = Float.parseFloat(propertyHandler.getProperty("bot.attack.minDistance"));
         this.maxAttackDistance = Float.parseFloat(propertyHandler.getProperty("bot.attack.maxDistance"));
     }
@@ -131,6 +130,8 @@ public class KomischeScheisswofastisch implements BotInterface {
 
 
         if (path.isEmpty()){
+
+            if (flag != null) {}
             path = new FindPath(root, flag, graph).findPath();
 
         }

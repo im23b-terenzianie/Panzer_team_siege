@@ -1,6 +1,6 @@
 public class Main {
     public static void main(String[] args) {
-        KomischeScheisswofastisch bot = new KomischeScheisswofastisch();
+        Panzerspähwagen_SdKfz_234 bot = new Panzerspähwagen_SdKfz_234();
         bot.start();
     }
 }

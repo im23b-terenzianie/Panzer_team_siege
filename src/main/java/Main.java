@@ -1,6 +1,6 @@
 public class Main {
     public static void main(String[] args) {
-        LightTank bot = new LightTank();
+        KomischeScheisswofastisch bot = new KomischeScheisswofastisch();
         bot.start();
     }
 }

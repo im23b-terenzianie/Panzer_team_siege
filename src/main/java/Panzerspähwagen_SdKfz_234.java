@@ -19,6 +19,8 @@ import dev.zwazel.internal.message.data.GameConfig;
 import dev.zwazel.internal.message.data.GameState;
 import dev.zwazel.internal.game.utils.*;
 
+import dev.zwazel.internal.game.MapControl;
+
 import java.util.*;
 
 public class Panzerspähwagen_SdKfz_234 implements BotInterface {
@@ -30,6 +32,7 @@ public class Panzerspähwagen_SdKfz_234 implements BotInterface {
     private List<ConnectedClientConfig> enemyTeamMembers;
 
     private MapVisualiser visualiser;
+    private MapControl mapControl;
 
     public Panzerspähwagen_SdKfz_234() {
         this.minAttackDistance = Float.parseFloat(propertyHandler.getProperty("bot.attack.minDistance"));
@@ -38,7 +41,8 @@ public class Panzerspähwagen_SdKfz_234 implements BotInterface {
 
 
     public void start() {
-        GameWorld.startGame(this);
+        //GameWorld.startGame(this);
+        GameWorld.connectToServer(this);
     }
 
     @Override
@@ -86,6 +90,7 @@ public class Panzerspähwagen_SdKfz_234 implements BotInterface {
             visualiser.showMap();
             world.registerVisualiser(visualiser);
         }
+
 
     }
 
@@ -190,13 +195,16 @@ public class Panzerspähwagen_SdKfz_234 implements BotInterface {
 
             }
 
-            System.out.println("Next Target Pos: " + nextTargetPos);
+
+
+
             world.getTank().moveTowards(world, worldPosOfTile, false);
 
             if (visualiser != null) {
                 visualiser.setPath(path);
                 visualiser.setGraph(graph);
             }
+
 
         }
     }

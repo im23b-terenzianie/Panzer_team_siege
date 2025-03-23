@@ -5,12 +5,14 @@ import dev.zwazel.internal.PublicGameWorld;
 import dev.zwazel.internal.config.LobbyConfig;
 import dev.zwazel.internal.config.LocalBotConfig;
 import dev.zwazel.internal.debug.MapVisualiser;
+import dev.zwazel.internal.game.MapControl;
 import dev.zwazel.internal.game.state.ClientState;
 import dev.zwazel.internal.game.tank.TankConfig;
 import dev.zwazel.internal.game.tank.implemented.SelfPropelledArtillery;
 import dev.zwazel.internal.game.transform.Quaternion;
 import dev.zwazel.internal.game.utils.Graph;
 import dev.zwazel.internal.game.utils.Node;
+import dev.zwazel.internal.game.MapControl;
 
 import java.util.LinkedList;
 import java.util.Optional;
@@ -24,6 +26,7 @@ public class Panzerhaubitze_2000 implements BotInterface {
     private Double currentTargetPitch = null;
     private int shotsFiredAtCurrentAngle = 0;
     private int ticksToWait = 20; // how many ticks to wait before starting to shoot (give the camera some time to get closer)
+    private MapControl mapControl;
 
     public static void main(String[] args) {
         Panzerhaubitze_2000 bot = new Panzerhaubitze_2000();
@@ -56,16 +59,13 @@ public class Panzerhaubitze_2000 implements BotInterface {
 
     @Override
     public void setup(PublicGameWorld world) {
-        // If in debug, add visualiser
-        if (world.isDebug()) {
-            // Add visualiser. By pressing space, you can switch between drawing modes.
-            visualiser = new MapVisualiser(world);
-            visualiser.setDrawingMode(MapVisualiser.DrawingMode.valueOf(propertyHandler.getProperty("debug.visualiser.mode").toUpperCase()));
-            world.registerVisualiser(visualiser);
-            visualiser.setMaxWindowHeight(1000);
-            visualiser.setMaxWindowWidth(1200);
-            visualiser.showMap();
-        }
+        // add control panel
+
+        mapControl = new MapControl(world);
+        mapControl.setDrawingMode(MapControl.DrawingMode.valueOf(propertyHandler.getProperty("debug.visualiser.mode").toUpperCase()));
+        mapControl.showMap();
+        world.registerVisualiser(mapControl);
+
     }
 
     @Override

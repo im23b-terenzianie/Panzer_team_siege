@@ -19,7 +19,7 @@ import dev.zwazel.internal.message.data.GameConfig;
 import dev.zwazel.internal.message.data.GameState;
 import dev.zwazel.internal.game.utils.*;
 
-import dev.zwazel.internal.game.MapControl;
+
 
 import java.util.*;
 
@@ -32,7 +32,6 @@ public class Panzerspähwagen_SdKfz_234 implements BotInterface {
     private List<ConnectedClientConfig> enemyTeamMembers;
 
     private MapVisualiser visualiser;
-    private MapControl mapControl;
 
     public Panzerspähwagen_SdKfz_234() {
         this.minAttackDistance = Float.parseFloat(propertyHandler.getProperty("bot.attack.minDistance"));

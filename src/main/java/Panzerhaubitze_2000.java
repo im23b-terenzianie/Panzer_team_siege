@@ -10,9 +10,12 @@ import dev.zwazel.internal.game.state.ClientState;
 import dev.zwazel.internal.game.tank.TankConfig;
 import dev.zwazel.internal.game.tank.implemented.SelfPropelledArtillery;
 import dev.zwazel.internal.game.transform.Quaternion;
+import dev.zwazel.internal.game.transform.Vec3;
 import dev.zwazel.internal.game.utils.Graph;
 import dev.zwazel.internal.game.utils.Node;
 import dev.zwazel.internal.game.MapControl;
+import dev.zwazel.internal.message.data.GameState;
+
 
 import java.util.LinkedList;
 import java.util.Optional;
@@ -28,11 +31,16 @@ public class Panzerhaubitze_2000 implements BotInterface {
     private int ticksToWait = 20; // how many ticks to wait before starting to shoot (give the camera some time to get closer)
     private MapControl mapControl;
 
+    /*
     public static void main(String[] args) {
         Panzerhaubitze_2000 bot = new Panzerhaubitze_2000();
 
         // GameWorld.startGame(bot); // This starts the game with a LightTank, and immediately starts the game when connected
         GameWorld.connectToServer(bot); // This connects to the server with a LightTank, but does not immediately start the game
+    } */
+    public void start() {
+        //GameWorld.startGame(this);
+        GameWorld.connectToServer(this);
     }
 
     @Override
@@ -72,10 +80,6 @@ public class Panzerhaubitze_2000 implements BotInterface {
     public void processTick(PublicGameWorld world) {
         Graph graph = new Graph(world.getGameConfig().mapDefinition(), false);
         LinkedList<Node> path = new LinkedList<>();
-        if (visualiser != null) {
-            visualiser.setPath(path);
-            visualiser.setGraph(graph);
-        }
 
         if (ticksToWait > 0) {
             ticksToWait--;
@@ -87,7 +91,7 @@ public class Panzerhaubitze_2000 implements BotInterface {
             System.out.println("I'm dead!");
             return;
         }
-
+        /*
         SelfPropelledArtillery tank = (SelfPropelledArtillery) world.getTank();
         TankConfig myTankConfig = tank.getConfig(world);
 
@@ -149,5 +153,58 @@ public class Panzerhaubitze_2000 implements BotInterface {
             tank.rotateTurretPitch(world, angleToRotate);
         }
         System.out.println("--------------------");
+
+         */
+
+        // moving the tank
+        Vec3 moveClosestTile = MapControl.getMoveTarget();
+        if (moveClosestTile != null) {
+
+            Vec3 myClosestTile = world.getGameConfig().mapDefinition().getClosestTileFromWorld(myClientState.transformBody().getTranslation());
+
+            Node root = graph.getNode(myClosestTile.getX(), myClosestTile.getZ());
+
+
+            Node target = graph.getNode(moveClosestTile.getX(), moveClosestTile.getZ());
+
+            path = new FindPath(root, target, graph).findPath();
+            System.out.println(path);
+
+            if (!path.isEmpty()) {
+                Node nextTargetPos = path.peekFirst();
+
+                Vec3 worldPosOfTile = world.getGameConfig()
+                        .mapDefinition()
+                        .getWorldTileCenter(
+                                nextTargetPos.getX(),
+                                nextTargetPos.getY()
+                        );
+
+                double distanceToNext = myClientState.transformBody().getTranslation().distance(worldPosOfTile);
+                double closeEnough = 0.3;
+                if (distanceToNext < closeEnough) {
+                    path.pollFirst();
+                    nextTargetPos = path.peekFirst();
+
+                    if (nextTargetPos == null) {
+                        System.out.println("Finished Path");
+                        return;
+                    }
+
+                }
+
+
+                world.getTank().moveTowards(world, worldPosOfTile, false);
+
+                if (visualiser != null) {
+                    visualiser.setPath(path);
+                    visualiser.setGraph(graph);
+                }
+                if (mapControl != null) {
+                    mapControl.setPath(path);
+                    mapControl.setGraph(graph);
+                }
+            }
+        }
     }
 }

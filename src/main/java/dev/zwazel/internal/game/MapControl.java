@@ -36,10 +36,10 @@ public class MapControl extends JPanel {
     private Graph graph;
     private int maxWindowWidth = 1000;
     private int maxWindowHeight = 1000;
-    private Vec3 movetarget = null;
+    private static Vec3 movetarget = null;
     private Vec3 shoottarget = null;
 
-    public void showMap() {
+    public Vec3 showMap() {
         int width = ((int) world.getGameConfig().mapDefinition().width() + 1) * CELL_SIZE;
         int height = ((int) world.getGameConfig().mapDefinition().depth() + 1) * CELL_SIZE;
 
@@ -79,14 +79,25 @@ public class MapControl extends JPanel {
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     movetarget = clickedTile;
                     System.out.println(movetarget);
-                }else if (e.getButton() == MouseEvent.BUTTON3) {
+                } else if (e.getButton() == MouseEvent.BUTTON3) {
                     shoottarget = clickedTile;
                     System.out.println("shoottarget: " + shoottarget);
                 }
 
-                }
+            }
 
         });
+        return null;
+    }
+
+
+
+    public static Vec3 getMoveTarget() {
+        return movetarget;
+    }
+
+    public Vec3 getShootTarget() {
+        return shoottarget;
     }
 
     // Drawing the map
@@ -100,6 +111,16 @@ public class MapControl extends JPanel {
             case HEIGHT -> drawHeightMap(g2d, mapDefinition);
             case PATH -> drawPath(g2d, mapDefinition);
             case ENTITIES -> drawEntities(g2d, mapDefinition);
+        }
+
+        if (shoottarget != null) {
+            g2d.setColor(Color.RED);
+            g2d.fillRect(
+                    (int)(shoottarget.getX() * CELL_SIZE),
+                    (int)(shoottarget.getZ() * CELL_SIZE),
+                    CELL_SIZE,
+                    CELL_SIZE
+            );
         }
     }
 
@@ -291,6 +312,8 @@ public class MapControl extends JPanel {
         // Fifth pass: Draw cell borders
         drawCellBorders(g2d, mapDefinition);
     }
+
+
 
     private void drawCost(Graphics2D g2d, Node[][] nodes) {
         for (Node[] row : nodes) {

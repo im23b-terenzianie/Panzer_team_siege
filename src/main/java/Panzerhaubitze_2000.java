@@ -91,6 +91,58 @@ public class Panzerhaubitze_2000 implements BotInterface {
             System.out.println("I'm dead!");
             return;
         }
+        // moving the tank
+        Vec3 moveClosestTile = MapControl.getMoveTarget();
+
+        if (moveClosestTile != null) {
+
+            Vec3 myClosestTile = world.getGameConfig().mapDefinition().getClosestTileFromWorld(myClientState.transformBody().getTranslation());
+
+            Node root = graph.getNode(myClosestTile.getX(), myClosestTile.getZ());
+
+
+            Node target = graph.getNode(moveClosestTile.getX(), moveClosestTile.getZ());
+
+            path = new FindPath(root, target, graph).findPath();
+
+
+            if (!path.isEmpty()) {
+                Node nextTargetPos = path.peekFirst();
+                System.out.println("Next target pos: " + nextTargetPos);
+
+                Vec3 worldPosOfTile = world.getGameConfig()
+                        .mapDefinition()
+                        .getWorldTileCenter(
+                                nextTargetPos.getX(),
+                                nextTargetPos.getY()
+                        );
+
+                double distanceToNext = myClientState.transformBody().getTranslation().distance(worldPosOfTile);
+                double closeEnough = 0.3;
+                if (distanceToNext < closeEnough) {
+                    path.pollFirst();
+                    nextTargetPos = path.peekFirst();
+
+                    if (nextTargetPos == null) {
+                        System.out.println("Finished Path");
+                        return;
+                    }
+
+                }
+
+                world.getTank().moveTowards(world, worldPosOfTile, false);
+
+
+                if (visualiser != null) {
+                    visualiser.setPath(path);
+                    visualiser.setGraph(graph);
+                }
+                if (mapControl != null) {
+                    mapControl.setPath(path);
+                    mapControl.setGraph(graph);
+                }
+            }
+        }
         /*
         SelfPropelledArtillery tank = (SelfPropelledArtillery) world.getTank();
         TankConfig myTankConfig = tank.getConfig(world);
@@ -156,56 +208,6 @@ public class Panzerhaubitze_2000 implements BotInterface {
 
          */
 
-        // moving the tank
-        Vec3 moveClosestTile = MapControl.getMoveTarget();
 
-        if (moveClosestTile != null) {
-
-            Vec3 myClosestTile = world.getGameConfig().mapDefinition().getClosestTileFromWorld(myClientState.transformBody().getTranslation());
-
-            Node root = graph.getNode(myClosestTile.getX(), myClosestTile.getZ());
-
-
-            Node target = graph.getNode(moveClosestTile.getX(), moveClosestTile.getZ());
-
-            path = new FindPath(root, target, graph).findPath();
-
-
-            if (!path.isEmpty()) {
-                Node nextTargetPos = path.peekFirst();
-
-                Vec3 worldPosOfTile = world.getGameConfig()
-                        .mapDefinition()
-                        .getWorldTileCenter(
-                                nextTargetPos.getX(),
-                                nextTargetPos.getY()
-                        );
-
-                double distanceToNext = myClientState.transformBody().getTranslation().distance(worldPosOfTile);
-                double closeEnough = 0.3;
-                if (distanceToNext < closeEnough) {
-                    path.pollFirst();
-                    nextTargetPos = path.peekFirst();
-
-                    if (nextTargetPos == null) {
-                        System.out.println("Finished Path");
-                        return;
-                    }
-
-                }
-
-                world.getTank().moveTowards(world, worldPosOfTile, false);
-
-
-                if (visualiser != null) {
-                    visualiser.setPath(path);
-                    visualiser.setGraph(graph);
-                }
-                if (mapControl != null) {
-                    mapControl.setPath(path);
-                    mapControl.setGraph(graph);
-                }
-            }
-        }
     }
 }

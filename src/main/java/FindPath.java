@@ -1,3 +1,4 @@
+import dev.zwazel.internal.game.tank.TankConfig;
 import dev.zwazel.internal.game.utils.Graph;
 import dev.zwazel.internal.game.utils.Node;
 import dev.zwazel.internal.game.utils.NodeComparator;
@@ -11,14 +12,16 @@ public class FindPath {
     private final Node root; // Starting node
     private final Node target; // Target node
     private final Graph graph; // Graph containing nodes and edges
+    private final TankConfig tankConfig;
     private LinkedList<Node> path = new LinkedList<>(); // List to store the path
     private PriorityQueue<Node> open = new PriorityQueue<>(new NodeComparator()); // Priority queue for open nodes
     private HashSet<Node> closed = new HashSet<>(); // Set for closed nodes
 
-    public FindPath(Node root, Node target, Graph graph) {
+    public FindPath(Node root, Node target, Graph graph, TankConfig config) {
         this.root = root;
         this.target = target;
         this.graph = graph;
+        this.tankConfig = config;
     }
 
     // Returns the path from the root to the target
@@ -49,7 +52,7 @@ public class FindPath {
             if (closed.contains(neighbour)) { // Skip if the neighbor is in the closed list
                 continue;
             }
-            double maxHeightDifference = 0.25;
+            double maxHeightDifference = this.tankConfig.maxSlope();
             double heightDifference = Math.abs(neighbour.getHeight() - current.getHeight());
             if (heightDifference > maxHeightDifference) {
                 continue;

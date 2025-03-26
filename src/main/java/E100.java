@@ -139,12 +139,12 @@ public class E100 implements BotInterface {
             return;
         }
 
-
+        TankConfig myTankConfig = world.getTank().getConfig(world);
         if (path.isEmpty()) {
 
             if (flag != null) {
             }
-            path = new FindPath(root, flag, graph).findPath();
+            path = new FindPath(root, flag, graph, myTankConfig).findPath();
 
         }
 
@@ -179,7 +179,7 @@ public class E100 implements BotInterface {
 
         /*Shooting and getting hit*/
         dev.zwazel.internal.game.tank.implemented.LightTank tank = (dev.zwazel.internal.game.tank.implemented.LightTank) world.getTank();
-        TankConfig myTankConfig = tank.getConfig(world);
+
         GameConfig config = world.getGameConfig();
 
         Optional<ClientState> closestEnemy = enemyTeamMembers.stream()

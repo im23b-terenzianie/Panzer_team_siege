@@ -13,7 +13,9 @@ import dev.zwazel.internal.game.state.FlagGameState;
 import dev.zwazel.internal.game.state.flag.Carried;
 import dev.zwazel.internal.game.state.flag.Dropped;
 import dev.zwazel.internal.game.state.flag.FlagState;
+import dev.zwazel.internal.game.tank.TankConfig;
 import dev.zwazel.internal.game.tank.implemented.LightTank;
+import dev.zwazel.internal.game.tank.implemented.SelfPropelledArtillery;
 import dev.zwazel.internal.game.transform.Vec3;
 import dev.zwazel.internal.message.data.GameConfig;
 import dev.zwazel.internal.message.data.GameState;
@@ -40,8 +42,8 @@ public class Panzerspähwagen_SdKfz_234 implements BotInterface {
 
 
     public void start() {
-        //GameWorld.startGame(this);
-        GameWorld.connectToServer(this);
+        GameWorld.startGame(this);
+        //GameWorld.connectToServer(this);
     }
 
     @Override
@@ -141,7 +143,7 @@ public class Panzerspähwagen_SdKfz_234 implements BotInterface {
             return;
         }
 
-
+        TankConfig myTankConfig = world.getTank().getConfig(world);
         if (path.isEmpty()) {
             if (enemyFlagState.state() instanceof Carried) {
                 Carried carriedState = (Carried) enemyFlagState.state();
@@ -161,13 +163,14 @@ public class Panzerspähwagen_SdKfz_234 implements BotInterface {
 
                         Node base = graph.getNode((int) teamflagbase.getX(), (int) teamflagbase.getZ());
 
-                        path = new FindPath(root, base, graph).findPath();
+
+                        path = new FindPath(root, base, graph, myTankConfig).findPath();
                     }
 
                 }
             } else {
 
-                path = new FindPath(root, flag, graph).findPath();
+                path = new FindPath(root, flag, graph, myTankConfig).findPath();
             }
         }
 

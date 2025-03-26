@@ -68,7 +68,7 @@ public class FindPath {
             if (!open.contains(neighbour)) { // If the neighbor is not in the open list
                 open.add(neighbour); // Add the neighbor to the open list
             } else {
-                open.remove(neighbour);
+                open.remove(neighbour); //Add input by Lucius
                 open.add(neighbour);
             }
         }

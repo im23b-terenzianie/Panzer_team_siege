@@ -75,7 +75,8 @@ public class Panzerhaubitze_2000 implements BotInterface {
         world.registerVisualiser(mapControl);
 
     }
-
+    boolean searchPath = true;
+    Vec3 moveClosestTile = null;
     @Override
     public void processTick(PublicGameWorld world) {
         Graph graph = new Graph(world.getGameConfig().mapDefinition(), false);
@@ -93,10 +94,10 @@ public class Panzerhaubitze_2000 implements BotInterface {
         }
         // moving the tank
 
-        Vec3 moveClosestTile = MapControl.getMoveTarget();
-        if (moveClosestTile != null) {
 
+        if (searchPath) {
 
+            moveClosestTile = MapControl.getMoveTarget();
             Vec3 myClosestTile = world.getGameConfig().mapDefinition().getClosestTileFromWorld(myClientState.transformBody().getTranslation());
 
             Node root = graph.getNode(myClosestTile.getX(), myClosestTile.getZ());
@@ -106,6 +107,10 @@ public class Panzerhaubitze_2000 implements BotInterface {
             TankConfig myTankConfig = world.getTank().getConfig(world);
 
             path = new FindPath(root, target, graph, myTankConfig).findPath();
+            searchPath = false;
+        }
+        if (moveClosestTile != MapControl.getMoveTarget()) {
+            searchPath = true;
         }
 
             if (!path.isEmpty()) {

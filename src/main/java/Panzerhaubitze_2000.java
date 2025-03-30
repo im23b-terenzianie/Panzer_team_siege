@@ -125,10 +125,18 @@ public class Panzerhaubitze_2000 implements BotInterface {
                     path.pollFirst();
                     nextTargetPos = path.peekFirst();
 
+                    if (!path.isEmpty()) {
+                        worldPosOfTile = world.getGameConfig()
+                                .mapDefinition()
+                                .getWorldTileCenter(
+                                        nextTargetPos.getX(),
+                                        nextTargetPos.getY()
+                                );
+                        world.getTank().moveTowards(world, worldPosOfTile, true);
+                    }
 
                     if (nextTargetPos == null) {
                         System.out.println("Finished Path");
-                        moveClosestTile = null;
                         return;
                     }
                 }

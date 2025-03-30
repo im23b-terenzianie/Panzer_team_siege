@@ -113,49 +113,48 @@ public class Panzerhaubitze_2000 implements BotInterface {
             searchPath = true;
         }
 
-            if (!path.isEmpty()) {
-                Node nextTargetPos = path.peekFirst();
+        if (!path.isEmpty()) {
+            Node nextTargetPos = path.peekFirst();
 
 
-                Vec3 worldPosOfTile = world.getGameConfig()
-                        .mapDefinition()
-                        .getWorldTileCenter(
-                                nextTargetPos.getX(),
-                                nextTargetPos.getY()
-                        );
+            Vec3 worldPosOfTile = world.getGameConfig()
+                    .mapDefinition()
+                    .getWorldTileCenter(
+                            nextTargetPos.getX(),
+                            nextTargetPos.getY()
+                    );
 
-                double distanceToNext = myClientState.transformBody().getTranslation().distance(worldPosOfTile);
-                double closeEnough = 0.3;
-                if (distanceToNext < closeEnough) {
-                    path.pollFirst();
-                    nextTargetPos = path.peekFirst();
+            double distanceToNext = myClientState.transformBody().getTranslation().distance(worldPosOfTile);
+            double closeEnough = 0.3;
+            if (distanceToNext < closeEnough) {
+                path.pollFirst();
+                nextTargetPos = path.peekFirst();
 
-                    if (!path.isEmpty()) {
-                        worldPosOfTile = world.getGameConfig()
-                                .mapDefinition()
-                                .getWorldTileCenter(
-                                        nextTargetPos.getX(),
-                                        nextTargetPos.getY()
-                                );
-                        world.getTank().moveTowards(world, worldPosOfTile, true);
-                    }
-
-                    if (nextTargetPos == null) {
-                        System.out.println("Finished Path");
-                        return;
-                    }
+                if (!path.isEmpty()) {
+                    worldPosOfTile = world.getGameConfig()
+                            .mapDefinition()
+                            .getWorldTileCenter(
+                                    nextTargetPos.getX(),
+                                    nextTargetPos.getY()
+                            );
+                    world.getTank().moveTowards(world, worldPosOfTile, true);
                 }
 
-                world.getTank().moveTowards(world, worldPosOfTile, true);
+                if (nextTargetPos == null) {
+                    System.out.println("Finished Path");
+                    return;
+                }
+            }
+            world.getTank().moveTowards(world, worldPosOfTile, true);
 
-                if (visualiser != null) {
-                    visualiser.setPath(path);
-                    visualiser.setGraph(graph);
-                }
-                if (mapControl != null) {
-                    mapControl.setPath(path);
-                    mapControl.setGraph(graph);
-                }
+            if (visualiser != null) {
+                visualiser.setPath(path);
+                visualiser.setGraph(graph);
+            }
+            if (mapControl != null) {
+                mapControl.setPath(path);
+                mapControl.setGraph(graph);
+            }
             }
 
         /*

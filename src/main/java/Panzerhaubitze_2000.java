@@ -156,7 +156,6 @@ public class Panzerhaubitze_2000 implements BotInterface {
                 mapControl.setGraph(graph);
             }
             }
-
         /*
         SelfPropelledArtillery tank = (SelfPropelledArtillery) world.getTank();
         TankConfig myTankConfig = tank.getConfig(world);

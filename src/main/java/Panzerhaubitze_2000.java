@@ -97,19 +97,19 @@ public class Panzerhaubitze_2000 implements BotInterface {
         if (searchPath) {
 
             moveClosestTile = mapControl.getMoveTarget();
-            if (moveClosestTile == null) {
-                return;
+            if (moveClosestTile != null) {
+
+                Vec3 myClosestTile = world.getGameConfig().mapDefinition().getClosestTileFromWorld(myClientState.transformBody().getTranslation());
+
+                Node root = graph.getNode(myClosestTile.getX(), myClosestTile.getZ());
+
+                Node target = graph.getNode(moveClosestTile.getX(), moveClosestTile.getZ());
+
+                TankConfig myTankConfig = world.getTank().getConfig(world);
+
+                path = new FindPath(root, target, graph, myTankConfig).findPath();
+                searchPath = false;
             }
-            Vec3 myClosestTile = world.getGameConfig().mapDefinition().getClosestTileFromWorld(myClientState.transformBody().getTranslation());
-
-            Node root = graph.getNode(myClosestTile.getX(), myClosestTile.getZ());
-
-            Node target = graph.getNode(moveClosestTile.getX(), moveClosestTile.getZ());
-
-            TankConfig myTankConfig = world.getTank().getConfig(world);
-
-            path = new FindPath(root, target, graph, myTankConfig).findPath();
-            searchPath = false;
         }
         ;
 
@@ -168,7 +168,7 @@ public class Panzerhaubitze_2000 implements BotInterface {
         }
 
         Vec3 target1 = mapControl.getShootTarget();
-        Vec3 start1 = mapControl.getMoveTarget();
+        Vec3 start1 = world.getMyState().transformBody().getTranslation();
         System.out.println("target1 = " + target1);
         if(target1 !=null)
         {
@@ -198,7 +198,7 @@ public class Panzerhaubitze_2000 implements BotInterface {
             double angle2 = Math.atan((Math.pow(v, 2) - root) / (g * distance));
 
 
-            double chosenPitch = Math.min(angle1, angle2);
+            double chosenPitch = Math.max(angle1, angle2);
             System.out.println("chosenPitch = " + chosenPitch);
 
         }

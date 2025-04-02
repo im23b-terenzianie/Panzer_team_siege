@@ -36,7 +36,7 @@ public class MapControl extends JPanel {
     private Graph graph;
     private int maxWindowWidth = 1000;
     private int maxWindowHeight = 1000;
-    private static Vec3 movetarget = null;
+    private  Vec3 movetarget = null;
     private Vec3 shoottarget = null;
 
     public Vec3 showMap() {
@@ -81,7 +81,7 @@ public class MapControl extends JPanel {
                     System.out.println(movetarget);
                 } else if (e.getButton() == MouseEvent.BUTTON3) {
                     shoottarget = clickedTile;
-                    System.out.println("shoottarget: " + shoottarget);
+
                 }
 
             }
@@ -92,7 +92,7 @@ public class MapControl extends JPanel {
 
 
 
-    public static Vec3 getMoveTarget() {
+    public  Vec3 getMoveTarget() {
         return movetarget;
     }
 
@@ -114,10 +114,12 @@ public class MapControl extends JPanel {
         }
 
         if (shoottarget != null) {
-            g2d.setColor(Color.RED);
+            int tileX = (int) shoottarget.getX();
+            int tileY = (int) shoottarget.getZ();
+            g2d.setColor(Color.BLUE);
             g2d.fillRect(
-                    (int)(shoottarget.getX() * CELL_SIZE),
-                    (int)(shoottarget.getZ() * CELL_SIZE),
+                    tileX * CELL_SIZE,
+                    tileY * CELL_SIZE,
                     CELL_SIZE,
                     CELL_SIZE
             );

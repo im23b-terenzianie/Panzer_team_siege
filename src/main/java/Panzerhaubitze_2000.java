@@ -13,11 +13,12 @@ import dev.zwazel.internal.game.transform.Quaternion;
 import dev.zwazel.internal.game.transform.Vec3;
 import dev.zwazel.internal.game.utils.Graph;
 import dev.zwazel.internal.game.utils.Node;
-import dev.zwazel.internal.game.MapControl;
 import dev.zwazel.internal.message.data.GameState;
 
 
+
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Optional;
 
 public class Panzerhaubitze_2000 implements BotInterface {
@@ -76,13 +77,13 @@ public class Panzerhaubitze_2000 implements BotInterface {
         world.registerVisualiser(mapControl);
 
     }
+
     boolean searchPath = true;
     Vec3 moveClosestTile = null;
+
     @Override
     public void processTick(PublicGameWorld world) {
         Graph graph = new Graph(world.getGameConfig().mapDefinition(), false);
-
-
 
 
         ClientState myClientState = world.getMyState();
@@ -93,10 +94,9 @@ public class Panzerhaubitze_2000 implements BotInterface {
         // moving the tank
 
 
-        System.out.println("searchPath = " + searchPath);
         if (searchPath) {
 
-            moveClosestTile = MapControl.getMoveTarget();
+            moveClosestTile = mapControl.getMoveTarget();
             if (moveClosestTile == null) {
                 return;
             }
@@ -110,12 +110,14 @@ public class Panzerhaubitze_2000 implements BotInterface {
 
             path = new FindPath(root, target, graph, myTankConfig).findPath();
             searchPath = false;
-        };
+        }
+        ;
 
-        if (moveClosestTile != MapControl.getMoveTarget()) {
+        if (moveClosestTile != mapControl.getMoveTarget()) {
             searchPath = true;
 
-        };
+        }
+        ;
 
         System.out.println("path = " + path.size());
         if (!path.isEmpty()) {
@@ -164,72 +166,109 @@ public class Panzerhaubitze_2000 implements BotInterface {
                 mapControl.setGraph(graph);
             }
         }
-    }
-        /*
-        SelfPropelledArtillery tank = (SelfPropelledArtillery) world.getTank();
-        TankConfig myTankConfig = tank.getConfig(world);
 
-        // Retrieve turret configuration values.
-        double turretMinPitch = myTankConfig.turretMinPitch();
-        double turretMaxPitch = myTankConfig.turretMaxPitch();
-        double turretPitchRotationSpeed = myTankConfig.turretPitchRotationSpeed();
+        Vec3 target1 = mapControl.getShootTarget();
+        Vec3 start1 = mapControl.getMoveTarget();
+        System.out.println("target1 = " + target1);
+        if(target1 !=null)
+        {
+            TankConfig myTankConfig = world.getTank().getConfig(world);
+            Node target = graph.getNode(target1.getX(), target1.getZ());
+            Node start = graph.getNode(start1.getX(), start1.getZ());
+            double dx = target.getX() - start.getX();
+            double dz = target.getY() - start.getY();
+            double v = myTankConfig.projectileSpeed();
+            double g = myTankConfig.projectileGravity();
+            double distance = Math.sqrt(dx*dx + dz*dz);
 
-        // Define steering properties from app.properties with defaults.
-        double angleStep = Double.parseDouble(
-                propertyHandler.getProperty("turret.angle.step") != null ?
-                        propertyHandler.getProperty("turret.angle.step") : "0.1"
-        );
-        int shotLimit = Integer.parseInt(
-                propertyHandler.getProperty("turret.shots.per.angle") != null ?
-                        propertyHandler.getProperty("turret.shots.per.angle") : "1"
-        );
+            float starttileheight = world.getGameConfig().mapDefinition().tiles()[start.getY()][start.getX()];
+            float targettileheight = world.getGameConfig().mapDefinition().tiles()[target.getY()][target.getX()];
 
-        // Initialize target pitch if not already done.
-        if (currentTargetPitch == null) {
-            currentTargetPitch = turretMinPitch;
+            double dy = targettileheight - starttileheight;
+
+            double underRoot = Math.pow(v, 4) - g * (g * Math.pow(distance, 2) + 2 * dy * Math.pow(v, 2));
+            if (underRoot < 0) {
+                // Ziel zu weit oder zu hoch
+                System.out.println("Target unreachable");
+                return;
+            }
+
+            double root = Math.sqrt(underRoot);
+            double angle1 = Math.atan((Math.pow(v, 2) + root) / (g * distance));
+            double angle2 = Math.atan((Math.pow(v, 2) - root) / (g * distance));
+
+
+            double chosenPitch = Math.min(angle1, angle2);
+            System.out.println("chosenPitch = " + chosenPitch);
+
         }
 
-        Quaternion turretRotation = world.getMyState().transformTurret().getRotation();
-        double currentPitch = turretRotation.getPitch();
 
-        System.out.println("Figuring out where to rotate turret to to shoot...");
-        double epsilon = 1e-6; // Acceptable error margin
-        if (Math.abs(currentTargetPitch - currentPitch) < epsilon) {
-            System.out.println("Turret is at target pitch");
-            // Shoot if the turret is at the maximum pitch
-            if (shotsFiredAtCurrentAngle < shotLimit) {
-                if (tank.shoot(world)) {
-                    System.out.println("Fired at pitch: " + currentTargetPitch);
-                    shotsFiredAtCurrentAngle++;
-                }
-            } else {
-                // Move to the next angle by subtracting as going up is negative pitch.
-                System.out.println("Reached shot limit at pitch: " + currentTargetPitch);
-                currentTargetPitch -= angleStep;
-                shotsFiredAtCurrentAngle = 0;
+    /*
+    SelfPropelledArtillery tank = (SelfPropelledArtillery) world.getTank();
+    TankConfig myTankConfig = tank.getConfig(world);
 
-                // If we have reached the maximum pitch, reset to the minimum pitch.
-                if (currentTargetPitch <= turretMaxPitch) {
-                    currentTargetPitch = turretMinPitch;
-                    System.out.println("Resetting to min pitch");
-                } else {
-                    System.out.println("next pitch: " + currentTargetPitch);
-                }
+    // Retrieve turret configuration values.
+    double turretMinPitch = myTankConfig.turretMinPitch();
+    double turretMaxPitch = myTankConfig.turretMaxPitch();
+    double turretPitchRotationSpeed = myTankConfig.turretPitchRotationSpeed();
+
+    // Define steering properties from app.properties with defaults.
+    double angleStep = Double.parseDouble(
+            propertyHandler.getProperty("turret.angle.step") != null ?
+                    propertyHandler.getProperty("turret.angle.step") : "0.1"
+    );
+    int shotLimit = Integer.parseInt(
+            propertyHandler.getProperty("turret.shots.per.angle") != null ?
+                    propertyHandler.getProperty("turret.shots.per.angle") : "1"
+    );
+
+    // Initialize target pitch if not already done.
+    if (currentTargetPitch == null) {
+        currentTargetPitch = turretMinPitch;
+    }
+
+    Quaternion turretRotation = world.getMyState().transformTurret().getRotation();
+    double currentPitch = turretRotation.getPitch();
+
+    System.out.println("Figuring out where to rotate turret to to shoot...");
+    double epsilon = 1e-6; // Acceptable error margin
+    if (Math.abs(currentTargetPitch - currentPitch) < epsilon) {
+        System.out.println("Turret is at target pitch");
+        // Shoot if the turret is at the maximum pitch
+        if (shotsFiredAtCurrentAngle < shotLimit) {
+            if (tank.shoot(world)) {
+                System.out.println("Fired at pitch: " + currentTargetPitch);
+                shotsFiredAtCurrentAngle++;
             }
         } else {
-            System.out.println("need to rotate turret");
-            double angleDifference = currentTargetPitch - currentPitch;
-            double angleToRotate = Math.min(turretPitchRotationSpeed, Math.abs(angleDifference));
-            angleToRotate = (angleDifference < 0) ? -angleToRotate : angleToRotate;
-            System.out.println("Current pitch: " + currentPitch);
-            System.out.println("Target pitch: " + currentTargetPitch);
-            System.out.println("Rotating turret by: " + angleToRotate);
-            tank.rotateTurretPitch(world, angleToRotate);
+            // Move to the next angle by subtracting as going up is negative pitch.
+            System.out.println("Reached shot limit at pitch: " + currentTargetPitch);
+            currentTargetPitch -= angleStep;
+            shotsFiredAtCurrentAngle = 0;
+
+            // If we have reached the maximum pitch, reset to the minimum pitch.
+            if (currentTargetPitch <= turretMaxPitch) {
+                currentTargetPitch = turretMinPitch;
+                System.out.println("Resetting to min pitch");
+            } else {
+                System.out.println("next pitch: " + currentTargetPitch);
+            }
         }
-        System.out.println("--------------------");
+    } else {
+        System.out.println("need to rotate turret");
+        double angleDifference = currentTargetPitch - currentPitch;
+        double angleToRotate = Math.min(turretPitchRotationSpeed, Math.abs(angleDifference));
+        angleToRotate = (angleDifference < 0) ? -angleToRotate : angleToRotate;
+        System.out.println("Current pitch: " + currentPitch);
+        System.out.println("Target pitch: " + currentTargetPitch);
+        System.out.println("Rotating turret by: " + angleToRotate);
+        tank.rotateTurretPitch(world, angleToRotate);
+    }
+    System.out.println("--------------------");
 
 
-        */
+    */
 
-
+}
 }

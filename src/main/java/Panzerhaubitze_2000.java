@@ -30,6 +30,7 @@ public class Panzerhaubitze_2000 implements BotInterface {
     private int shotsFiredAtCurrentAngle = 0;
     private int ticksToWait = 20; // how many ticks to wait before starting to shoot (give the camera some time to get closer)
     private MapControl mapControl;
+    LinkedList<Node> path = new LinkedList<>();
 
     /*
     public static void main(String[] args) {
@@ -80,12 +81,9 @@ public class Panzerhaubitze_2000 implements BotInterface {
     @Override
     public void processTick(PublicGameWorld world) {
         Graph graph = new Graph(world.getGameConfig().mapDefinition(), false);
-        LinkedList<Node> path = new LinkedList<>();
 
-        if (ticksToWait > 0) {
-            ticksToWait--;
-            return;
-        }
+
+
 
         ClientState myClientState = world.getMyState();
         if (myClientState.state() == ClientState.PlayerState.DEAD) {
@@ -95,9 +93,13 @@ public class Panzerhaubitze_2000 implements BotInterface {
         // moving the tank
 
 
+        System.out.println("searchPath = " + searchPath);
         if (searchPath) {
 
             moveClosestTile = MapControl.getMoveTarget();
+            if (moveClosestTile == null) {
+                return;
+            }
             Vec3 myClosestTile = world.getGameConfig().mapDefinition().getClosestTileFromWorld(myClientState.transformBody().getTranslation());
 
             Node root = graph.getNode(myClosestTile.getX(), myClosestTile.getZ());
@@ -108,12 +110,16 @@ public class Panzerhaubitze_2000 implements BotInterface {
 
             path = new FindPath(root, target, graph, myTankConfig).findPath();
             searchPath = false;
-        }
+        };
+
         if (moveClosestTile != MapControl.getMoveTarget()) {
             searchPath = true;
-        }
 
+        };
+
+        System.out.println("path = " + path.size());
         if (!path.isEmpty()) {
+
             Node nextTargetPos = path.peekFirst();
 
 
@@ -137,7 +143,8 @@ public class Panzerhaubitze_2000 implements BotInterface {
                                     nextTargetPos.getX(),
                                     nextTargetPos.getY()
                             );
-                    world.getTank().moveTowards(world, worldPosOfTile, true);
+
+
                 }
 
                 if (nextTargetPos == null) {
@@ -145,7 +152,8 @@ public class Panzerhaubitze_2000 implements BotInterface {
                     return;
                 }
             }
-            world.getTank().moveTowards(world, worldPosOfTile, true);
+
+            world.getTank().moveTowards(world, worldPosOfTile, false);
 
             if (visualiser != null) {
                 visualiser.setPath(path);
@@ -155,7 +163,8 @@ public class Panzerhaubitze_2000 implements BotInterface {
                 mapControl.setPath(path);
                 mapControl.setGraph(graph);
             }
-            }
+        }
+    }
         /*
         SelfPropelledArtillery tank = (SelfPropelledArtillery) world.getTank();
         TankConfig myTankConfig = tank.getConfig(world);
@@ -222,5 +231,5 @@ public class Panzerhaubitze_2000 implements BotInterface {
 
         */
 
-    }
+
 }

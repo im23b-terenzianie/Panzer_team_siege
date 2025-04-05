@@ -41,8 +41,8 @@ public class Panzerhaubitze_2000 implements BotInterface {
         GameWorld.connectToServer(bot); // This connects to the server with a LightTank, but does not immediately start the game
     } */
     public void start() {
-        GameWorld.startGame(this);
-        //GameWorld.connectToServer(this);
+        //GameWorld.startGame(this);
+        GameWorld.connectToServer(this);
     }
 
     @Override
@@ -198,12 +198,17 @@ public class Panzerhaubitze_2000 implements BotInterface {
             double angle2 = Math.atan((Math.pow(v, 2) - root) / (g * distance));
 
 
-            double chosenPitch = Math.max(angle1, angle2);
+            double chosenPitch = Math.min(angle1, angle2);
             System.out.println("chosenPitch = " + chosenPitch);
 
+            SelfPropelledArtillery tank = (SelfPropelledArtillery) world.getTank();
+            Quaternion turretRotation = world.getMyState().transformTurret().getRotation();
+            double currentPitch = turretRotation.getPitch();
+            double pitchDifference = chosenPitch - currentPitch;
+
+            tank.rotateTurretPitch(world, -pitchDifference);
+
         }
-
-
     /*
     SelfPropelledArtillery tank = (SelfPropelledArtillery) world.getTank();
     TankConfig myTankConfig = tank.getConfig(world);

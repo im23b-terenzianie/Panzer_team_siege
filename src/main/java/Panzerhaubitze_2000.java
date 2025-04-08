@@ -207,7 +207,6 @@ public class Panzerhaubitze_2000 implements BotInterface {
             double pitchDifference = chosenPitch - currentPitch;
 
             tank.rotateTurretPitch(world, -pitchDifference);
-
         }
     /*
     SelfPropelledArtillery tank = (SelfPropelledArtillery) world.getTank();

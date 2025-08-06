@@ -4,9 +4,8 @@ Panzer Team Siege is a Java project developed as part of a non-obligatory school
 
 ## Features
 
-- **A* Algorithm Bot:** A custom bot that navigates efficiently using the A* pathfinding algorithm.
+- ** A* Algorithm Bot:** A custom bot that navigates efficiently using the A* pathfinding algorithm.
 - **Multiple Tank Bots:** Various tank bots with unique behaviors and strategies.
-- **AI Experimentation:** The project serves as a sandbox for experimenting with different AI algorithms and approaches in Java.
 
 ## Motivation
 

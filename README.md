@@ -9,7 +9,7 @@ Panzer Team Siege is a Java project developed as part of a non-obligatory school
 
 ## Motivation
 
-This project was created to explore artificial intelligence, pathfinding, and Java programming concepts in a school setting. It primarily demonstrates the implementation of advanced pathfinding and AI-driven behaviors for bots.
+This project was created to explore pathfinding and Java programming concepts in a school setting. It primarily demonstrates the implementation of advanced pathfinding and AI-driven behaviors for bots.
 
 ## Technologies Used
 
